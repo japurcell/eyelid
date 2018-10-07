@@ -1,6 +1,7 @@
 const SelectStateKey = 'selectState';
 const StateOnText = 'ON';
 const StateOffText = 'OFF';
+let CurrentState = 0;
 
 const mapState = (state, on, off) =>
 	state === 1
@@ -9,6 +10,8 @@ const mapState = (state, on, off) =>
 
 const setBadgeText = (state, callback) =>
 {
+	CurrentState = state;
+
 	const text =
 		mapState(
 			state,
@@ -43,18 +46,18 @@ const toggleText = () =>
 chrome.browserAction.onClicked.addListener(toggleText);
 
 chrome.webRequest.onBeforeRequest.addListener(details =>
-	// TODO: can't be async
-	getSelectionState(state =>
+	{
+		if (CurrentState === 1)
 		{
-			if (state === 1)
-			{
-				return { redirectUrl: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==" };
-			}
-		}),
-		{
-			urls: ["http://*/*", "https://*/*"],
-			types: ["image", "object"]
-		}, ["blocking"]);
+			return {
+				redirectUrl: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg=="
+			};
+		}
+	},
+	{
+		urls: ["http://*/*", "https://*/*"],
+		types: ["image", "object"]
+	}, ["blocking"]);
 
 chrome.tabs.onUpdated.addListener(() =>
 	getSelectionState(state =>
@@ -70,16 +73,8 @@ chrome.tabs.onUpdated.addListener(() =>
 			() => null
 		)));
 
-getSelectionState(setBadgeText);
-
-// chrome.webRequest.onBeforeRequest.addListener(function(details) {
-// 	if (localStorage.on == '1') {
-// 		return {redirectUrl: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg=="};
-// 	}
-// }, {urls: ["http://*/*", "https://*/*"], types: ["image", "object"]}, ["blocking"]);
-
-// chrome.tabs.onUpdated.addListener(function() {
-// 	if (localStorage.on == '1') {
-// 		chrome.tabs.insertCSS(null, {code: "img{visibility: hidden;}", runAt: "document_start"});	    
-// 	}
-// });
+getSelectionState(state =>
+{
+	CurrentState = state;
+	setBadgeText(state);
+});
