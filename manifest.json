@@ -4,15 +4,15 @@
     "version": "1.0",
     "manifest_version": 2,
     "permissions": [
-        "activeTab",
-        "declarativeContent",
-        "storage"],
+        "storage",
+        "tabs",
+        "webRequest",
+        "webRequestBlocking",
+        "<all_urls>"],
     "background": {
-        "scripts": ["background.js"],
-        "persistent": false
+        "scripts": ["background.js"]
     },
     "browser_action": {
         "default_title": "Eye Lid"
-    },
-    "options_page": "options.html"
+    }
 }

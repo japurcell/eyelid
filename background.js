@@ -42,6 +42,34 @@ const toggleText = () =>
 
 chrome.browserAction.onClicked.addListener(toggleText);
 
+chrome.webRequest.onBeforeRequest.addListener(details =>
+	// TODO: can't be async
+	getSelectionState(state =>
+		{
+			if (state === 1)
+			{
+				return { redirectUrl: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==" };
+			}
+		}),
+		{
+			urls: ["http://*/*", "https://*/*"],
+			types: ["image", "object"]
+		}, ["blocking"]);
+
+chrome.tabs.onUpdated.addListener(() =>
+	getSelectionState(state =>
+		mapState(
+			state,
+			() => chrome.tabs.insertCSS(
+				null,
+				{
+					code: 'img { visibility: hidden; }',
+					runAt: 'document_start'
+				}
+			),
+			() => null
+		)));
+
 getSelectionState(setBadgeText);
 
 // chrome.webRequest.onBeforeRequest.addListener(function(details) {
