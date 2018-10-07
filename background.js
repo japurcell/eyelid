@@ -2,11 +2,19 @@ const SelectStateKey = 'selectState';
 const StateOnText = 'ON';
 const StateOffText = 'OFF';
 
+const mapState = (state, on, off) =>
+	state === 1
+		? on()
+		: off();
+
 const setBadgeText = (state, callback) =>
 {
-	const text = state === 1
-		? StateOnText
-		: StateOffText;
+	const text =
+		mapState(
+			state,
+			() => StateOnText,
+			() => StateOffText
+		);
 
 	console.debug(`Setting badge text to ${text}`);
 
@@ -24,9 +32,7 @@ const getSelectionState = callback =>
 const toggleText = () =>
 	getSelectionState(state =>
 	{
-		const nextState = state === 1
-			? 0
-			: 1;
+		const nextState = mapState(state, () => 0, () => 1);
 
 		console.debug(`Toggling state to ${nextState}`);
 
@@ -37,36 +43,6 @@ const toggleText = () =>
 chrome.browserAction.onClicked.addListener(toggleText);
 
 getSelectionState(setBadgeText);
-
-// chrome.declarativeContent.onPageChanged.removeRules(undefined, () =>
-// {
-// 	chrome.declarativeContent.onPageChanged.addRules([{
-// 		conditions: [new chrome.declarativeContent.PageStateMatcher({
-// 			pageUrl: { hostEquals: 'developer.chrome.com' },
-// 		})],
-// 		actions: [new chrome.declarativeContent.ShowPageAction()]
-// 	}]);
-// });
-
-// if (!localStorage.on) {
-//     localStorage.on = '1';
-// }
-
-// if (localStorage.on == '1') {
-// 	chrome.browserAction.setIcon({path: "images/icon19.png"});
-// } else {
-// 	chrome.browserAction.setIcon({path: "images/icon19-disabled.png"});
-// }
-
-// chrome.browserAction.onClicked.addListener(function(tab) {
-// 	if (localStorage.on == '1') {
-// 		chrome.browserAction.setIcon({path: "images/icon19-disabled.png"});
-// 		localStorage.on = '0';
-// 	} else {
-// 		chrome.browserAction.setIcon({path: "images/icon19.png"});
-// 		localStorage.on = '1';
-// 	}
-// });
 
 // chrome.webRequest.onBeforeRequest.addListener(function(details) {
 // 	if (localStorage.on == '1') {
