@@ -2,6 +2,7 @@ const SelectStateKey = 'selectState';
 const StateOnText = 'ON';
 const StateOffText = 'OFF';
 let CurrentState = 0;
+let UrlState = 0;
 
 const mapState = (state, on, off) =>
 	state === 1
@@ -47,15 +48,26 @@ chrome.browserAction.onClicked.addListener(toggleText);
 
 chrome.webRequest.onBeforeRequest.addListener(details =>
 	{
-		if (CurrentState === 1)
+		const tabUrl = tabUrlState.url(details.tabId) ||  '';
+
+		console.debug(`Rcvd ${tabUrl} from tabUrlState`);
+
+		if (CurrentState === 1 &&
+			tabUrl &&
+			!tabUrl.search(/facebook/))
 		{
+			UrlState = 1;
 			return {
 				redirectUrl: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg=="
 			};
 		}
+		else
+		{
+			UrlState = 0;
+		}
 	},
 	{
-		urls: ["http://*/*", "https://*/*"],
+		urls: ["<all_urls>"],
 		types: ["image", "object"]
 	}, ["blocking"]);
 
@@ -63,13 +75,15 @@ chrome.tabs.onUpdated.addListener(() =>
 	getSelectionState(state =>
 		mapState(
 			state,
-			() => chrome.tabs.insertCSS(
-				null,
-				{
-					code: 'img { visibility: hidden; }',
-					runAt: 'document_start'
-				}
-			),
+			() => UrlState === 1
+				? 
+					chrome.tabs.insertCSS(
+						null,
+						{
+							code: 'img { visibility: hidden; }',
+							runAt: 'document_start'
+						})
+				: null,
 			() => null
 		)));
 
